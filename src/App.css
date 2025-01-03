@@ -1,0 +1,16 @@
+* {
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: rgb(34, 34, 34);
+    margin: 0;
+}
+
+main {
+    display: flex;
+    color: white;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
