@@ -11,16 +11,30 @@ const KAO = {
 const QUOTES = [
   'Ổn áp đấy Huy.',
   'Làm tốt rồi đó Huy.',
-  'Làm vậy là người ta yên tâm rồi.',,
+  'Làm vậy là người ta yên tâm rồi.',
   'Tiếp tục nhé Huy.',
   'Ổn rồi, đừng dừng.',
   'Nice, Huy làm được mà.',
+  'Huy đang làm rất tốt đó.',
+  'Cứ vậy đi, ổn lắm.',
+  'Huy giỏi thật sự đấy.',
+  'Tin Huy làm được mà.',
+  'Đỉnh đấy Huy, cứ tiếp tục.',
+  'Huy ổn áp lắm, đừng lo.',
+  'Chắc chắn được thôi, Huy làm được.',
+  'Thấy Huy cố gắng là người ta vui rồi.',
+  'Huy làm vậy là đúng rồi đó.',
 ]
 
 const LONG_QUOTES = [
   '60 phút rồi, Huy giữ phong độ tốt đấy.',
   'Kiên trì vậy là rất ổn, tiếp tục phát huy.',
   'Tập trung 60 phút liên tục — làm tốt lắm.',
+  'Huy ngồi được 60 phút, người ta tự hào lắm đó.',
+  '1 tiếng tập trung — không phải ai cũng làm được đâu Huy.',
+  'Xong rồi! Huy xứng đáng được thưởng.',
+  '60 phút không rời — Huy thật sự ổn định rồi.',
+  'Làm được 1 tiếng, Huy giỏi hơn Huy nghĩ đấy.',
 ]
 
 function fmt(s) {
@@ -125,12 +139,13 @@ export default function App() {
   const [spinMsg, setSpinMsg]       = useState(null)
 
   const [fishVisible, setFishVisible] = useState(false)
-  const [fishCaught, setFishCaught]   = useState(false)
+  const [fishCaught, setFishCaught]   = useState(0)
 
   const firstFocusDone = useRef(false)
-  const timerRef   = useRef(null)
-  const msgTimeout = useRef(null)
-  const pulseTimer = useRef(null)
+  const timerRef    = useRef(null)
+  const startTimeRef = useRef(null)
+  const msgTimeout  = useRef(null)
+  const pulseTimer  = useRef(null)
 
   // ── Idle pulse hint ──
   useEffect(() => {
@@ -145,22 +160,21 @@ export default function App() {
   // ── Timer tick ──
   useEffect(() => {
     if (!timerActive) return
+    const target = duration * 60
     timerRef.current = setInterval(() => {
-      setElapsed(e => {
-        const next = e + 1
-        const target = duration * 60
-        if (duration === 60 && !fishCaught && next > 60 && next < target - 30) {
-          if (Math.random() < 0.004) setFishVisible(true)
-        }
-        if (next >= target) {
-          clearInterval(timerRef.current)
-          setTimerActive(false)
-          handleDone(duration)
-          return target
-        }
-        return next
-      })
-    }, 1000)
+      const next = Math.floor((Date.now() - startTimeRef.current) / 1000)
+      if (duration === 60 && fishCaught < 2 && !fishVisible && next > 60 && next < target - 30) {
+        if (Math.random() < 0.004) setFishVisible(true)
+      }
+      if (next >= target) {
+        clearInterval(timerRef.current)
+        setTimerActive(false)
+        setElapsed(target)
+        handleDone(duration)
+        return
+      }
+      setElapsed(next)
+    }, 200)
     return () => clearInterval(timerRef.current)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timerActive, duration, fishCaught])
@@ -182,8 +196,8 @@ export default function App() {
     setTimeout(() => {
       const r = Math.random()
       let result, msg
-      if (r < 0.2) { result = '💋'; msg = '💋 Trúng phiếu hôn!! Lucky!!'; setKisses(k => k + 1) }
-      else if (r < 0.7) { result = '🌸'; msg = '🌸 Được phiếu thơm~'; setScents(s => s + 1) }
+      if (r < 0.25) { result = '💋'; msg = '💋 Trúng phiếu hôn!! Lucky!!'; setKisses(k => k + 1) }
+      else if (r < 0.75) { result = '🌸'; msg = '🌸 Được phiếu thơm~'; setScents(s => s + 1) }
       else { result = '😿'; msg = '😿 Không được gì... Cố lên!' }
       setSpinResult(result)
       setSpinning(false)
@@ -210,9 +224,10 @@ export default function App() {
   }
 
   const startFocus = () => {
+    startTimeRef.current = Date.now()
     setElapsed(0)
     setFishVisible(false)
-    setFishCaught(false)
+    setFishCaught(0)
     setTimerActive(true)
     setMode('focusing')
     setCatState('sit')
@@ -237,7 +252,7 @@ export default function App() {
 
   const handleFishClick = () => {
     setFishVisible(false)
-    setFishCaught(true)
+    setFishCaught(c => c + 1)
     showMsg('Bắt được cá! +1 lượt quay 🐟', 2500)
     // Auto spin with 1 extra spin from fish
     doSpin(1)
@@ -313,13 +328,13 @@ export default function App() {
         <div>🎯 Chọn <b>30 phút</b> hoặc <b>60 phút</b> → bấm <b>Bắt đầu Focus</b></div>
         <div>🌸 30 phút xong → 1 phiếu thơm &nbsp;|&nbsp; 💋 60 phút xong → 1 phiếu hôn</div>
         <div>🐟 Focus 60 phút: cá ngẫu nhiên xuất hiện → click → tự quay ngay</div>
-        <div>🎰 Quay: <b>50%</b> phiếu thơm · <b>20%</b> phiếu hôn · <b>30%</b> không được gì</div>
+        <div>🎰 Quay: <b>50%</b> phiếu thơm · <b>25%</b> phiếu hôn · <b>25%</b> không được gì</div>
         <div style={{ color: '#bbb', fontSize: 11, marginTop: 3 }}>⚠️ Data mất khi refresh · Click mèo để nói chuyện bất cứ lúc nào</div>
       </div>
 
       {/* Cat + bubble */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-        <div style={{ minHeight: 50, display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, height: 140 }}>
+        <div style={{ height: 50, display: 'flex', alignItems: 'center' }}>
           {catMsg && (
             <div style={{
               background: '#fff', border: '1.5px solid #f9c0d8',
@@ -332,7 +347,7 @@ export default function App() {
             </div>
           )}
         </div>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', height: 74, display: 'flex', alignItems: 'center' }}>
           <KaoCat state={catState} pulse={showPulse && mode === 'idle'} onClick={handleCatClick} />
           {showPulse && mode === 'idle' && (
             <div style={{
