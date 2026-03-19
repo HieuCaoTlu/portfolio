@@ -1,462 +1,435 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from 'react'
 
-const cards = [
-  {
-    id: 1,
-    emoji: "🎓",
-    title: "Học vấn",
-    content: "Cử nhân loại Xuất Sắc ngành Trí Tuệ Nhân Tạo",
-    sub: "Đại học Thăng Long · GPA 9.4",
-    color: "#FFD700",
-    bg: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-    particles: ["⭐", "📚", "🏆", "💡"],
-  },
-  {
-    id: 2,
-    emoji: "💻",
-    title: "Công việc",
-    content: "Kỹ sư phần mềm tại FaceNet",
-    sub: "Công ty Cổ phần Công nghệ cao FaceNet",
-    color: "#00f5d4",
-    bg: "linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1c2128 100%)",
-    particles: ["⚙️", "🖥️", "🔧", "✨"],
-  },
-  {
-    id: 3,
-    emoji: "🏫",
-    title: "Trung học",
-    content: "THPT Trần Nhân Tông, Hà Nội",
-    sub: "Học sinh khối A1 nhưng đi thi A0",
-    color: "#ff9a9e",
-    bg: "linear-gradient(135deg, #2d1b69 0%, #11998e 100%)",
-    particles: ["🌸", "📖", "🎒", "🌺"],
-  },
-  {
-    id: 4,
-    emoji: "🎨",
-    title: "Sở thích",
-    content: "Vẽ vời · Viết văn",
-    sub: "Gam màu đặc biệt nhất chính là trí tưởng tượng",
-    color: "#f9ca24",
-    bg: "linear-gradient(135deg, #7a2400 0%, #8a5500 100%)",
-    particles: ["🖌️", "✍️", "💕", "🌈"],
-  },
-  {
-    id: 5,
-    emoji: "🌙",
-    title: "Ước mơ",
-    content: "Để những người xung quanh cảm thấy an tâm",
-    sub: "",
-    color: "#a8edea",
-    bg: "linear-gradient(135deg, #243b55 0%, #141e30 100%)",
-    particles: ["🕊️", "💫", "🌙", "⭐"],
-  },
-  {
-    id: 6,
-    emoji: "🎵",
-    title: "Âm nhạc",
-    content: "A Little Dream of Me · Cảm ơn người đã thức cùng tôi · Love Potions",
-    sub: "K-pop · US-UK · J-pop · V-pop",
-    color: "#e0e0e0",
-    bg: "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #222222 100%)",
-    particles: ["🎵", "🎧", "🎤", "✨"],
-  },
-  {
-    id: 7,
-    emoji: "🏙️",
-    title: "Quê hương",
-    content: "Sinh ra và lớn lên tại Hà Nội",
-    sub: "Yên Sở, Hoàng Mai",
-    color: "#7ec8e3",
-    bg: "linear-gradient(135deg, #020c1b 0%, #0a1628 50%, #0d2137 100%)",
-    particles: ["🏙️", "🌌", "🌙", "⭐"],
-  },
-  {
-    id: 8,
-    emoji: "🐱",
-    title: "Chân ái",
-    content: "Siêu thích mèo — Mèo là chân ái!",
-    sub: "Tôi yêu các loài động vật dễ thương",
-    color: "#fdcb6e",
-    bg: "linear-gradient(135deg, #7a5500 0%, #8a3800 100%)",
-    particles: ["🐱", "🐾", "😻", "🐈"],
-  },
-  {
-    id: 9,
-    emoji: "♌",
-    title: "Cung hoàng đạo",
-    content: "Cung Sư Tử",
-    sub: "Yêu hết mình và hết lòng",
-    color: "#ffffff",
-    bg: "linear-gradient(135deg, #7a4500 0%, #8a7000 100%)",
-    particles: ["♌", "🔥", "👑", "🦁"],
-  },
-];
-
-function FloatingParticle({ emoji, index }) {
-  const style = {
-    position: "absolute",
-    fontSize: `${Math.random() * 16 + 14}px`,
-    left: `${Math.random() * 80 + 10}%`,
-    top: `${Math.random() * 80 + 10}%`,
-    opacity: 0,
-    animation: `floatUp ${2 + Math.random() * 2}s ease-out ${index * 0.3}s forwards`,
-    pointerEvents: "none",
-    userSelect: "none",
-  };
-  return <span style={style}>{emoji}</span>;
+// ─── Kaomoji sets per state ────────────────────────────────────────────────────
+const KAO = {
+  idle:    ['(=^･ω･^=)', '(≧◡≦)', '(=^‥^=)', 'ฅ^•ﻌ•^ฅ', '(^･o･^)ﾉ"'],
+  sit:     ['(=｀ω´=)', '( ᵕ—ᴗ— )', '(˘•ω•˘)', '(=^-ω-^=)', 'U^ェ^U'],
+  happy:   ['(=^▽^=)', '(*≧ω≦*)', '(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧', 'ヽ(=^･ω･^=)ﾉ', '(๑>ᴗ<๑)'],
+  sleepy:  ['(=｀-ω-´=)', '(-ω-) zzz', '(=ω=.)..zzzZZ', '(ᴗ˳ᴗ)', '(눈_눈)'],
 }
 
-function Card({ card, isFlipped, onClick, isActive }) {
-  const [particles, setParticles] = useState([]);
-  const [showParticles, setShowParticles] = useState(false);
+const QUOTES = [
+  'Ổn áp đấy Huy.',
+  'Làm tốt rồi đó Huy.',
+  'Làm vậy là người ta yên tâm rồi.',,
+  'Tiếp tục nhé Huy.',
+  'Ổn rồi, đừng dừng.',
+  'Nice, Huy làm được mà.',
+]
+
+const LONG_QUOTES = [
+  '60 phút rồi, Huy giữ phong độ tốt đấy.',
+  'Kiên trì vậy là rất ổn, tiếp tục phát huy.',
+  'Tập trung 60 phút liên tục — làm tốt lắm.',
+]
+
+function fmt(s) {
+  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
+}
+
+// ─── Kaomoji Cat component ─────────────────────────────────────────────────────
+function KaoCat({ state = 'idle', onClick, pulse }) {
+  const list = KAO[state] || KAO.idle
+  const [idx, setIdx] = useState(0)
 
   useEffect(() => {
-    if (isFlipped) {
-      setParticles(
-        Array.from({ length: 8 }, (_, i) => ({
-          id: i,
-          emoji: card.particles[i % card.particles.length],
-        }))
-      );
-      setShowParticles(true);
-      const t = setTimeout(() => setShowParticles(false), 3000);
-      return () => clearTimeout(t);
-    }
-  }, [isFlipped]);
+    setIdx(0)
+    const id = setInterval(() => setIdx(i => (i + 1) % list.length), 1200)
+    return () => clearInterval(id)
+  }, [state, list.length])
 
   return (
     <div
       onClick={onClick}
       style={{
-        width: "100%",
-        maxWidth: 340,
-        height: 220,
-        perspective: "1000px",
-        cursor: "pointer",
-        transition: "transform 0.2s",
-        transform: isActive ? "scale(1.03)" : "scale(1)",
+        fontSize: 36,
+        cursor: onClick ? 'pointer' : 'default',
+        userSelect: 'none',
+        letterSpacing: 1,
+        animation: pulse ? 'catPulse 1.1s ease-in-out infinite' : 'none',
+        transition: 'transform .15s',
+        padding: '8px 16px',
+        borderRadius: 16,
+        background: pulse ? '#fff0f6' : 'transparent',
+        border: pulse ? '2px dashed #f9a8d4' : '2px solid transparent',
       }}
     >
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          position: "relative",
-          transformStyle: "preserve-3d",
-          transition: "transform 0.7s cubic-bezier(0.23, 1, 0.32, 1)",
-          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-        }}
-      >
-        {/* Front */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            borderRadius: 20,
-            background: "linear-gradient(135deg, #1a0533 0%, #2d1065 100%)",
-            border: "2px solid rgba(255,255,255,0.12)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-            boxShadow: "0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
-          }}
-        >
-          <div style={{
-            fontSize: 48,
-            filter: "drop-shadow(0 0 20px rgba(255,255,255,0.3))",
-            animation: "pulse 2s ease-in-out infinite",
-          }}>
-            {card.emoji}
-          </div>
-          <div style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 18,
-            fontWeight: 700,
-            color: card.color,
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-          }}>
-            {card.title}
-          </div>
-          <div style={{
-            fontSize: 12,
-            color: "rgba(255,255,255,0.4)",
-            letterSpacing: "0.15em",
-            fontFamily: "monospace",
-          }}>
-            CHẠM ĐỂ KHÁM PHÁ →
-          </div>
-
-          {/* decorative corners */}
-          {["0,0", "calc(100% - 20px),0", "0,calc(100% - 20px)", "calc(100% - 20px),calc(100% - 20px)"].map((pos, i) => (
-            <div key={i} style={{
-              position: "absolute",
-              left: pos.split(",")[0],
-              top: pos.split(",")[1],
-              width: 20,
-              height: 20,
-              border: `2px solid ${card.color}`,
-              borderRadius: 4,
-              opacity: 0.4,
-              borderRight: i % 2 === 0 ? "none" : undefined,
-              borderLeft: i % 2 !== 0 ? "none" : undefined,
-              borderBottom: i < 2 ? "none" : undefined,
-              borderTop: i >= 2 ? "none" : undefined,
-            }} />
-          ))}
-        </div>
-
-        {/* Back */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
-            borderRadius: 20,
-            background: card.bg,
-            border: `2px solid ${card.color}44`,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-            padding: "24px 20px",
-            boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 40px ${card.color}22, inset 0 1px 0 rgba(255,255,255,0.15)`,
-            overflow: "hidden",
-            textAlign: "center",
-          }}
-        >
-          {showParticles && particles.map((p, i) => (
-            <FloatingParticle key={`${p.id}-${isFlipped}`} emoji={p.emoji} index={i} />
-          ))}
-
-          <div style={{ fontSize: 40, zIndex: 1, animation: "bounceIn 0.5s ease-out" }}>
-            {card.emoji}
-          </div>
-          <div style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 14,
-            fontWeight: 700,
-            color: card.color,
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-            zIndex: 1,
-          }}>
-            {card.title}
-          </div>
-          <div style={{
-            fontFamily: "'Lato', sans-serif",
-            fontSize: 16,
-            fontWeight: 700,
-            color: "#ffffff",
-            lineHeight: 1.6,
-            zIndex: 1,
-            textShadow: "0 1px 8px rgba(0,0,0,0.7)",
-          }}>
-            {card.content}
-          </div>
-          <div style={{
-            fontFamily: "'Lato', sans-serif",
-            fontSize: 13,
-            fontWeight: 500,
-            color: "rgba(255,255,255,0.88)",
-            lineHeight: 1.5,
-            zIndex: 1,
-            textShadow: "0 1px 6px rgba(0,0,0,0.6)",
-          }}>
-            {card.sub}
-          </div>
-
-          {/* glow blob */}
-          <div style={{
-            position: "absolute",
-            width: 160,
-            height: 160,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${card.color}33, transparent 70%)`,
-            bottom: -40,
-            right: -40,
-            pointerEvents: "none",
-          }} />
-        </div>
-      </div>
+      {list[idx]}
     </div>
-  );
+  )
 }
 
-export default function App() {
-  const [flipped, setFlipped] = useState({});
-  const [hovered, setHovered] = useState(null);
+// ─── Spin slot ─────────────────────────────────────────────────────────────────
+function SpinSlot({ spinning, result }) {
+  const items = ['🌸', '💋', '😿', '🌸', '💋', '🌸', '😿']
+  const [display, setDisplay] = useState('🌸')
+  useEffect(() => {
+    if (!spinning) { if (result) setDisplay(result); return }
+    let i = 0
+    const id = setInterval(() => { setDisplay(items[i++ % items.length]) }, 75)
+    return () => clearInterval(id)
+  }, [spinning, result])
+  return (
+    <div style={{
+      width: 96, height: 96, background: '#fff', border: '3px solid #e8c4d8',
+      borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: 52, boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+      transform: spinning ? 'scale(1.08)' : 'scale(1)', transition: 'transform .2s',
+    }}>
+      {display}
+    </div>
+  )
+}
 
-  const toggle = (id) => {
-    setFlipped((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+// ─── Counter chip ──────────────────────────────────────────────────────────────
+function Counter({ icon, value, label }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 5,
+      background: '#fdf0f6', border: '1px solid #f9c0d8',
+      borderRadius: 10, padding: '5px 11px',
+    }}>
+      <span style={{ fontSize: 16 }}>{icon}</span>
+      <span style={{ fontWeight: 700, fontSize: 16, color: '#e879a0' }}>{value}</span>
+      <span style={{ fontSize: 11, color: '#c08090' }}>{label}</span>
+    </div>
+  )
+}
+
+const mainBtn = {
+  background: 'linear-gradient(135deg,#f9a8d4,#e879a0)',
+  border: 'none', borderRadius: 14, padding: '13px 36px',
+  color: '#fff', fontWeight: 700, fontSize: 16, cursor: 'pointer',
+  boxShadow: '0 4px 16px rgba(232,121,160,.3)',
+}
+
+// ─── Main App ──────────────────────────────────────────────────────────────────
+export default function App() {
+  const [mode, setMode]             = useState('idle')
+  const [duration, setDuration]     = useState(30)
+  const [elapsed, setElapsed]       = useState(0)
+  const [timerActive, setTimerActive] = useState(false)
+
+  const [spins, setSpins]       = useState(1)
+  const [scents, setScents]     = useState(0)
+  const [kisses, setKisses]     = useState(0)
+  const [totalMins, setTotalMins] = useState(0)
+
+  const [catState, setCatState]   = useState('idle')
+  const [showPulse, setShowPulse] = useState(false)
+  const [catMsg, setCatMsg]       = useState(null)
+
+  const [spinning, setSpinning]     = useState(false)
+  const [showSpin, setShowSpin]     = useState(false)
+  const [spinResult, setSpinResult] = useState(null)
+  const [spinMsg, setSpinMsg]       = useState(null)
+
+  const [fishVisible, setFishVisible] = useState(false)
+  const [fishCaught, setFishCaught]   = useState(false)
+
+  const firstFocusDone = useRef(false)
+  const timerRef   = useRef(null)
+  const msgTimeout = useRef(null)
+  const pulseTimer = useRef(null)
+
+  // ── Idle pulse hint ──
+  useEffect(() => {
+    if (mode !== 'idle') { clearInterval(pulseTimer.current); setShowPulse(false); return }
+    pulseTimer.current = setInterval(() => {
+      setShowPulse(true)
+      setTimeout(() => setShowPulse(false), 1800)
+    }, 5000)
+    return () => clearInterval(pulseTimer.current)
+  }, [mode])
+
+  // ── Timer tick ──
+  useEffect(() => {
+    if (!timerActive) return
+    timerRef.current = setInterval(() => {
+      setElapsed(e => {
+        const next = e + 1
+        const target = duration * 60
+        if (duration === 60 && !fishCaught && next > 60 && next < target - 30) {
+          if (Math.random() < 0.004) setFishVisible(true)
+        }
+        if (next >= target) {
+          clearInterval(timerRef.current)
+          setTimerActive(false)
+          handleDone(duration)
+          return target
+        }
+        return next
+      })
+    }, 1000)
+    return () => clearInterval(timerRef.current)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timerActive, duration, fishCaught])
+
+  const showMsg = (msg, dur = 4500) => {
+    setCatMsg(msg)
+    clearTimeout(msgTimeout.current)
+    msgTimeout.current = setTimeout(() => setCatMsg(null), dur)
+  }
+
+  const doSpin = (extraSpins = 0) => {
+    const available = spins + extraSpins
+    if (available <= 0) return
+    setSpins(available - 1)
+    setShowSpin(true)
+    setSpinning(true)
+    setSpinResult(null)
+    setSpinMsg(null)
+    setTimeout(() => {
+      const r = Math.random()
+      let result, msg
+      if (r < 0.2) { result = '💋'; msg = '💋 Trúng phiếu hôn!! Lucky!!'; setKisses(k => k + 1) }
+      else if (r < 0.7) { result = '🌸'; msg = '🌸 Được phiếu thơm~'; setScents(s => s + 1) }
+      else { result = '😿'; msg = '😿 Không được gì... Cố lên!' }
+      setSpinResult(result)
+      setSpinning(false)
+      setSpinMsg(msg)
+    }, 2000)
+  }
+
+  const handleDone = (mins) => {
+    setTotalMins(t => t + mins)
+    setMode('done')
+    setCatState('happy')
+    if (mins >= 60) {
+      setKisses(k => k + 1)
+      showMsg(LONG_QUOTES[Math.floor(Math.random() * LONG_QUOTES.length)], 6000)
+    } else {
+      setScents(s => s + 1)
+      showMsg(QUOTES[Math.floor(Math.random() * QUOTES.length)] + ' +🌸 Phiếu thơm!', 5000)
+    }
+    setTimeout(() => setCatState('idle'), 3000)
+    if (!firstFocusDone.current) {
+      firstFocusDone.current = true
+      setTimeout(() => doSpin(), 800)
+    }
+  }
+
+  const startFocus = () => {
+    setElapsed(0)
+    setFishVisible(false)
+    setFishCaught(false)
+    setTimerActive(true)
+    setMode('focusing')
+    setCatState('sit')
+    showMsg('Bắt đầu nào! 🐾', 3000)
+  }
+
+  const stopFocus = () => {
+    clearInterval(timerRef.current)
+    setTimerActive(false)
+    setMode('idle')
+    setCatState('idle')
+    showMsg('Ừ thôi nghỉ ngơi đi... 😿', 3000)
+  }
+
+  const handleCatClick = () => {
+    showMsg(QUOTES[Math.floor(Math.random() * QUOTES.length)])
+    if (mode !== 'focusing') {
+      setCatState('happy')
+      setTimeout(() => setCatState(mode === 'done' ? 'idle' : 'idle'), 1200)
+    }
+  }
+
+  const handleFishClick = () => {
+    setFishVisible(false)
+    setFishCaught(true)
+    showMsg('Bắt được cá! +1 lượt quay 🐟', 2500)
+    // Auto spin with 1 extra spin from fish
+    doSpin(1)
+  }
+
+  const closeSpin = () => { if (!spinning) setShowSpin(false) }
+
+  const progress = elapsed / (duration * 60)
+  const remaining = duration * 60 - elapsed
 
   return (
-    <>
+    <div style={{
+      height: '100%', overflow: 'hidden', background: '#fafaf8',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif',
+    }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;500;700&display=swap');
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-          background: #0a0011;
-          min-height: 100vh;
-          font-family: 'Lato', sans-serif;
+        html, body, #root { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        @keyframes catPulse {
+          0%,100% { transform:scale(1) translateY(0); }
+          50%      { transform:scale(1.08) translateY(-5px); }
         }
-
-        @keyframes floatUp {
-          0% { opacity: 0; transform: translateY(0) rotate(0deg) scale(0.5); }
-          30% { opacity: 1; }
-          100% { opacity: 0; transform: translateY(-80px) rotate(20deg) scale(1.2); }
+        @keyframes fishFloat {
+          0%,100% { transform:translateY(0) rotate(-8deg); }
+          50%      { transform:translateY(-12px) rotate(8deg); }
         }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.08); }
+        @keyframes fadeUp {
+          from { opacity:0; transform:translateY(8px); }
+          to   { opacity:1; transform:translateY(0); }
         }
-        @keyframes bounceIn {
-          0% { transform: scale(0.3); opacity: 0; }
-          60% { transform: scale(1.1); }
-          100% { transform: scale(1); opacity: 1; }
+        @keyframes popIn {
+          from { opacity:0; transform:scale(.88); }
+          to   { opacity:1; transform:scale(1); }
         }
-        @keyframes shimmer {
-          0% { background-position: -400px 0; }
-          100% { background-position: 400px 0; }
-        }
-        @keyframes floatBg {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -20px) scale(1.05); }
-          66% { transform: translate(-20px, 10px) scale(0.98); }
-        }
-        @keyframes starTwinkle {
-          0%, 100% { opacity: 0.2; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.2); }
-        }
-        @keyframes titleGlow {
-          0%, 100% { text-shadow: 0 0 20px #b57bff55; }
-          50% { text-shadow: 0 0 40px #b57bff99, 0 0 80px #ff79c644; }
-        }
-
-        .card-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 24px;
-          padding: 20px;
-          max-width: 1100px;
-          margin: 0 auto;
-        }
-
-        @media (max-width: 600px) {
-          .card-grid { grid-template-columns: 1fr; gap: 16px; }
-        }
+        * { box-sizing:border-box; }
       `}</style>
 
+      {/* ── Header ── */}
       <div style={{
-        minHeight: "100vh",
-        background: "#08000f",
-        position: "relative",
-        overflow: "hidden",
+        position: 'fixed', top: 0, left: 0, right: 0, height: 54,
+        background: '#fff', borderBottom: '1px solid #ede8e0',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px', zIndex: 100,
       }}>
-        {/* Background blobs */}
-        {["#3d0099", "#1a0060", "#6600cc"].map((c, i) => (
-          <div key={i} style={{
-            position: "fixed",
-            width: 500,
-            height: 500,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${c}55, transparent 70%)`,
-            left: `${[10, 60, 30][i]}%`,
-            top: `${[20, 60, 80][i]}%`,
-            transform: "translate(-50%, -50%)",
-            animation: `floatBg ${8 + i * 2}s ease-in-out infinite`,
-            pointerEvents: "none",
-          }} />
-        ))}
-
-        {/* Stars */}
-        {Array.from({ length: 40 }).map((_, i) => (
-          <div key={i} style={{
-            position: "fixed",
-            width: 2,
-            height: 2,
-            borderRadius: "50%",
-            background: "#fff",
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animation: `starTwinkle ${1.5 + Math.random() * 3}s ease-in-out ${Math.random() * 3}s infinite`,
-            pointerEvents: "none",
-          }} />
-        ))}
-
-        {/* Header */}
-        <div style={{
-          textAlign: "center",
-          padding: "60px 20px 40px",
-          position: "relative",
-          zIndex: 1,
-        }}>
-          <div style={{ fontSize: 64, marginBottom: 12 }}>🌟</div>
-          <h1 style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: "clamp(32px, 6vw, 56px)",
-            fontWeight: 900,
-            color: "#ffffff",
-            letterSpacing: "-0.02em",
-            animation: "titleGlow 3s ease-in-out infinite",
-            marginBottom: 8,
+          <Counter icon="⏱" value={totalMins > 0 ? `${Math.floor(totalMins/60) > 0 ? Math.floor(totalMins/60)+'h ' : ''}${totalMins%60}p` : '0p'} label="Focus" />
+          <Counter icon="🌸" value={scents} label="Thơm" />
+          <Counter icon="💋" value={kisses} label="Hôn" />
+          <button onClick={() => doSpin()} disabled={spins <= 0} style={{
+            background: spins > 0 ? 'linear-gradient(135deg,#f9a8d4,#e879a0)' : '#eee',
+            border: 'none', borderRadius: 10, padding: '7px 13px',
+            color: spins > 0 ? '#fff' : '#bbb', fontWeight: 600, fontSize: 13,
+            cursor: spins > 0 ? 'pointer' : 'default',
           }}>
-            Cao Trung Hiếu
-          </h1>
-          <div style={{
-            display: "inline-block",
-            background: "linear-gradient(90deg, #b57bff, #ff79c6, #b57bff)",
-            backgroundSize: "400px 100%",
-            animation: "shimmer 3s linear infinite",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            fontFamily: "'Lato', sans-serif",
-            fontSize: 16,
-            fontWeight: 500,
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-          }}>
-            ✦ Nhấn vào từng thẻ để khám phá ✦
-          </div>
-        </div>
+            🎰 Quay ({spins})
+          </button>
+      </div>
 
-        {/* Cards */}
-        <div className="card-grid" style={{ position: "relative", zIndex: 1 }}>
-          {cards.map((card) => (
-            <Card
-              key={card.id}
-              card={card}
-              isFlipped={!!flipped[card.id]}
-              isActive={hovered === card.id}
-              onClick={() => toggle(card.id)}
-            />
-          ))}
-        </div>
+      {/* ── Main content: fills remaining height ── */}
+      <div style={{
+        flex: 1, width: '100%', maxWidth: 480,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'space-evenly', padding: '8px 20px 12px',
+        overflow: 'hidden', marginTop: 54,
+      }}>
 
-        <div style={{
-          textAlign: "center",
-          padding: "40px 20px 60px",
-          color: "rgba(255,255,255,0.25)",
-          fontSize: 13,
-          letterSpacing: "0.1em",
-          fontFamily: "monospace",
-          position: "relative",
-          zIndex: 1,
-        }}>
-          made with 🩷 · hà nội
+      {/* Description */}
+      <div style={{
+        width: '100%', background: '#fff',
+        border: '1px solid #ede8e0', borderRadius: 14,
+        padding: '12px 16px', fontSize: 13, color: '#555', lineHeight: 1.75,
+      }}>
+        <div style={{ fontWeight: 700, color: '#333', marginBottom: 5, fontSize: 14 }}>Cách chơi</div>
+        <div>🎯 Chọn <b>30 phút</b> hoặc <b>60 phút</b> → bấm <b>Bắt đầu Focus</b></div>
+        <div>🌸 30 phút xong → 1 phiếu thơm &nbsp;|&nbsp; 💋 60 phút xong → 1 phiếu hôn</div>
+        <div>🐟 Focus 60 phút: cá ngẫu nhiên xuất hiện → click → tự quay ngay</div>
+        <div>🎰 Quay: <b>50%</b> phiếu thơm · <b>20%</b> phiếu hôn · <b>30%</b> không được gì</div>
+        <div style={{ color: '#bbb', fontSize: 11, marginTop: 3 }}>⚠️ Data mất khi refresh · Click mèo để nói chuyện bất cứ lúc nào</div>
+      </div>
+
+      {/* Cat + bubble */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <div style={{ minHeight: 50, display: 'flex', alignItems: 'center' }}>
+          {catMsg && (
+            <div style={{
+              background: '#fff', border: '1.5px solid #f9c0d8',
+              borderRadius: 14, padding: '9px 16px',
+              fontSize: 14, color: '#333', maxWidth: 320, textAlign: 'center',
+              boxShadow: '0 2px 14px rgba(249,168,212,0.2)',
+              animation: 'fadeUp .2s ease', lineHeight: 1.6,
+            }}>
+              {catMsg}
+            </div>
+          )}
+        </div>
+        <div style={{ position: 'relative' }}>
+          <KaoCat state={catState} pulse={showPulse && mode === 'idle'} onClick={handleCatClick} />
+          {showPulse && mode === 'idle' && (
+            <div style={{
+              position: 'absolute', bottom: -18, left: '50%', transform: 'translateX(-50%)',
+              fontSize: 11, color: '#e879a0', whiteSpace: 'nowrap',
+              fontWeight: 600, animation: 'fadeUp .3s ease',
+            }}>click me~</div>
+          )}
         </div>
       </div>
-    </>
-  );
+
+      {/* Controls */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, width: '100%' }}>
+        {mode === 'idle' && (
+          <>
+            <div style={{ display: 'flex', gap: 12 }}>
+              {[30, 60].map(m => (
+                <button key={m} onClick={() => setDuration(m)} style={{
+                  padding: '10px 30px', borderRadius: 12,
+                  border: `2px solid ${duration === m ? '#e879a0' : '#ddd'}`,
+                  background: duration === m ? '#fce4ec' : '#fff',
+                  color: duration === m ? '#e879a0' : '#777',
+                  fontWeight: duration === m ? 700 : 500,
+                  fontSize: 15, cursor: 'pointer', transition: 'all .15s',
+                }}>
+                  {m} phút
+                </button>
+              ))}
+            </div>
+            <button onClick={startFocus} style={mainBtn}>
+              🎯 Bắt đầu Focus
+            </button>
+          </>
+        )}
+
+        {mode === 'focusing' && (
+          <>
+            <div style={{ position: 'relative', width: 150, height: 150 }}>
+              <svg width={150} height={150} style={{ transform: 'rotate(-90deg)' }}>
+                <circle cx={75} cy={75} r={62} fill="none" stroke="#f0e0ea" strokeWidth={10} />
+                <circle cx={75} cy={75} r={62} fill="none" stroke="#f9a8d4" strokeWidth={10}
+                  strokeDasharray={`${2 * Math.PI * 62}`}
+                  strokeDashoffset={`${2 * Math.PI * 62 * (1 - progress)}`}
+                  strokeLinecap="round"
+                  style={{ transition: 'stroke-dashoffset 1s linear' }} />
+              </svg>
+              <div style={{
+                position: 'absolute', inset: 0,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <div style={{ fontSize: 30, fontWeight: 700, color: '#333', letterSpacing: 1 }}>{fmt(remaining)}</div>
+                <div style={{ fontSize: 12, color: '#bbb', marginTop: 2 }}>{duration} phút</div>
+              </div>
+            </div>
+            <button onClick={stopFocus} style={{ ...mainBtn, background: '#f0f0f0', color: '#999', boxShadow: 'none', fontSize: 14 }}>
+              Dừng lại
+            </button>
+          </>
+        )}
+
+        {mode === 'done' && (
+          <button onClick={() => setMode('idle')} style={mainBtn}>
+            🔄 Focus tiếp nào!
+          </button>
+        )}
+      </div>
+
+      </div>{/* end main content flex */}
+
+      {/* ── Fish ── */}
+      {fishVisible && (
+        <div onClick={handleFishClick} style={{
+          position: 'fixed', top: '30%', right: '10%', zIndex: 50,
+          fontSize: 46, cursor: 'pointer', userSelect: 'none',
+          animation: 'fishFloat 2s ease-in-out infinite',
+          filter: 'drop-shadow(0 0 8px rgba(100,200,255,.7))',
+        }}>🐟</div>
+      )}
+
+      {/* ── Spin overlay ── */}
+      {showSpin && (
+        <div onClick={closeSpin} style={{
+          position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.9)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          zIndex: 200, gap: 18, animation: 'popIn .2s ease',
+          cursor: spinning ? 'default' : 'pointer',
+        }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#555' }}>
+            {spinning ? 'Đang quay...' : spinMsg || ''}
+          </div>
+          <SpinSlot spinning={spinning} result={spinResult} />
+          {!spinning && (
+            <div style={{ fontSize: 13, color: '#bbb', marginTop: 4 }}>click bất kỳ để đóng</div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
