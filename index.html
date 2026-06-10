@@ -1,37 +1,334 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>Bầu Trời Sao</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body {
-        width: 100%; height: 100%;
-        background: #000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-        touch-action: none;
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Focus Timer 🐰</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #1a1530;
+    font-family: 'Comic Sans MS', 'Segoe UI', system-ui, sans-serif;
+    color: #ffe0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  #app {
+    text-align: center;
+    padding: 24px;
+    max-width: 480px;
+    width: 100%;
+  }
+  h1 {
+    font-size: 28px;
+    color: #ffd6f0;
+    text-shadow: 0 0 8px #ff8ad8, 0 0 16px #ff8ad8;
+    margin-bottom: 8px;
+  }
+  .timer {
+    font-size: 64px;
+    font-weight: bold;
+    color: #fff5fb;
+    text-shadow: 0 0 10px #c78bff, 0 0 24px #c78bff, 0 0 40px #8a5cff;
+    margin: 24px 0;
+    letter-spacing: 4px;
+  }
+  .controls {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  button {
+    background: none;
+    border: none;
+    color: #ffe0f0;
+    font-family: inherit;
+    font-size: 18px;
+    padding: 12px 24px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: text-shadow 0.2s, transform 0.1s, color 0.2s;
+    text-shadow: 0 0 6px rgba(255, 138, 216, 0.6);
+  }
+  button:hover {
+    color: #fff;
+    text-shadow: 0 0 14px #ff8ad8, 0 0 28px #ff8ad8;
+    transform: scale(1.06);
+  }
+  button:active { transform: scale(0.97); }
+  button.primary {
+    color: #c2ffd9;
+    text-shadow: 0 0 8px #6effb0;
+  }
+  button.primary:hover {
+    text-shadow: 0 0 16px #6effb0, 0 0 32px #6effb0;
+  }
+  button.danger {
+    color: #ffc2c2;
+    text-shadow: 0 0 8px #ff7a7a;
+  }
+  button.danger:hover {
+    text-shadow: 0 0 16px #ff7a7a, 0 0 32px #ff7a7a;
+  }
+  .stats {
+    font-size: 22px;
+    margin: 16px 0;
+    line-height: 1.8;
+  }
+  .stats span {
+    text-shadow: 0 0 8px #ffd1ec;
+  }
+  .rules {
+    font-size: 14px;
+    color: #cdb8ff;
+    text-shadow: 0 0 4px rgba(199,139,255,0.5);
+    margin-top: 28px;
+    line-height: 1.7;
+    text-align: left;
+    padding: 0 8px;
+  }
+  .rules h3 {
+    color: #ffd6f0;
+    text-shadow: 0 0 8px #ff8ad8;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 5, 25, 0.7);
+    backdrop-filter: blur(2px);
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #251b40;
+    border-radius: 24px;
+    padding: 32px 28px;
+    text-align: center;
+    max-width: 360px;
+    width: 90%;
+    box-shadow: 0 0 30px rgba(199,139,255,0.4);
+  }
+  .modal h2 {
+    color: #ffd6f0;
+    text-shadow: 0 0 10px #ff8ad8, 0 0 20px #ff8ad8;
+    margin-bottom: 16px;
+    font-size: 24px;
+  }
+  .modal .gift {
+    font-size: 48px;
+    margin: 16px 0;
+    text-shadow: 0 0 20px #ffe27a, 0 0 40px #ffe27a;
+  }
+  .modal p {
+    font-size: 18px;
+    margin: 8px 0;
+    text-shadow: 0 0 8px #ffd1ec;
+  }
+  .pulse {
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { text-shadow: 0 0 10px #c78bff, 0 0 24px #c78bff, 0 0 40px #8a5cff; }
+    50% { text-shadow: 0 0 18px #c78bff, 0 0 40px #c78bff, 0 0 60px #8a5cff; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>🐰 Focus Timer</h1>
+  <div class="timer pulse" id="timerDisplay">00:00:00</div>
+
+  <div class="controls">
+    <button class="primary" id="startBtn">▶ Bắt đầu</button>
+    <button class="danger" id="pauseBtn" style="display:none">⏸ Tạm dừng</button>
+    <button id="resumeBtn" style="display:none">▶ Tiếp tục</button>
+    <button id="summaryBtn">📋 Tổng kết</button>
+  </div>
+
+  <div class="stats">
+    <div>😘 Cheek kiss hiện có: <span id="kissCount">0</span></div>
+    <div>💋 Kiss hiện có: <span id="hugCount">0</span></div>
+  </div>
+
+  <div class="rules">
+    <h3>📜 Luật chơi</h3>
+    <p>• Cứ mỗi <b>15 phút</b> tập trung liên tục, bạn nhận được <b>1 cheek kiss</b> 😘, hoặc ngẫu nhiên <b>0.5 kiss</b> 💋.</p>
+    <p>• Nhỡ tắt tab hoặc thoát khi đang đếm? Yên tâm, mở lại sẽ tự tính tiếp đúng giờ đang dở 💜</p>
+    <p>• Bấm <b>Tổng kết</b> để xem toàn bộ phần thưởng đã tích lũy và nhận quà. Sau đó bấm <b>Bắt đầu</b> để chơi lại từ đầu (lịch sử mới).</p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>🎉 Lịch sự nhận quà 🎉</h2>
+    <div class="gift">🎁</div>
+    <p>Tổng thời gian tập trung: <b id="modalTime">00:00:00</b></p>
+    <p>😘 Cheek kiss nhận được: <b id="modalKiss">0</b></p>
+    <p>💋 Kiss nhận được: <b id="modalHug">0</b></p>
+    <div class="controls" style="margin-top:20px">
+      <button class="primary" id="restartBtn">🔄 Chơi lại từ đầu</button>
+      <button id="closeModalBtn">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'focusTimerState';
+
+  function loadState() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try { return JSON.parse(raw); } catch (e) {}
+    }
+    return {
+      running: false,
+      elapsed: 0,
+      lastTick: null,
+      totalKiss: 0,
+      totalHug: 0,
+      rewardedSlots: 0
+    };
+  }
+
+  let state = loadState();
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  const timerDisplay = document.getElementById('timerDisplay');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resumeBtn = document.getElementById('resumeBtn');
+  const summaryBtn = document.getElementById('summaryBtn');
+  const kissCount = document.getElementById('kissCount');
+  const hugCount = document.getElementById('hugCount');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalTime = document.getElementById('modalTime');
+  const modalKiss = document.getElementById('modalKiss');
+  const modalHug = document.getElementById('modalHug');
+  const restartBtn = document.getElementById('restartBtn');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
+  function formatTime(sec) {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = Math.floor(sec % 60);
+    return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
+  }
+
+  function checkRewards() {
+    const slots = Math.floor(state.elapsed / (15 * 60));
+    while (state.rewardedSlots < slots) {
+      if (Math.random() < 0.5) {
+        state.totalKiss += 1;
+      } else {
+        state.totalHug += 0.5;
       }
-      #app {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      canvas {
-        display: block;
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+      state.rewardedSlots++;
+    }
+  }
+
+  function render() {
+    timerDisplay.textContent = formatTime(state.elapsed);
+    kissCount.textContent = state.totalKiss;
+    hugCount.textContent = state.totalHug;
+
+    if (state.running) {
+      startBtn.style.display = 'none';
+      pauseBtn.style.display = 'inline-block';
+      resumeBtn.style.display = 'none';
+    } else if (state.elapsed > 0) {
+      startBtn.style.display = 'none';
+      pauseBtn.style.display = 'none';
+      resumeBtn.style.display = 'inline-block';
+    } else {
+      startBtn.style.display = 'inline-block';
+      pauseBtn.style.display = 'none';
+      resumeBtn.style.display = 'none';
+    }
+
+    summaryBtn.style.display = state.elapsed > 0 ? 'inline-block' : 'none';
+  }
+
+  function tick() {
+    if (!state.running) return;
+    const now = Date.now();
+    const delta = (now - state.lastTick) / 1000;
+    state.elapsed += delta;
+    state.lastTick = now;
+    checkRewards();
+    render();
+    saveState();
+  }
+
+  // Resume from last session if it was running while tab closed
+  if (state.running && state.lastTick) {
+    const now = Date.now();
+    state.elapsed += (now - state.lastTick) / 1000;
+    state.lastTick = now;
+    checkRewards();
+  }
+
+  startBtn.addEventListener('click', () => {
+    state.running = true;
+    state.lastTick = Date.now();
+    saveState();
+    render();
+  });
+
+  resumeBtn.addEventListener('click', () => {
+    state.running = true;
+    state.lastTick = Date.now();
+    saveState();
+    render();
+  });
+
+  pauseBtn.addEventListener('click', () => {
+    tick();
+    state.running = false;
+    saveState();
+    render();
+  });
+
+  summaryBtn.addEventListener('click', () => {
+    if (state.running) tick();
+    modalTime.textContent = formatTime(state.elapsed);
+    modalKiss.textContent = state.totalKiss;
+    modalHug.textContent = state.totalHug;
+    modalOverlay.classList.add('show');
+  });
+
+  closeModalBtn.addEventListener('click', () => {
+    modalOverlay.classList.remove('show');
+  });
+
+  restartBtn.addEventListener('click', () => {
+    state = {
+      running: false,
+      elapsed: 0,
+      lastTick: null,
+      totalKiss: state.totalKiss,
+      totalHug: state.totalHug,
+      rewardedSlots: 0
+    };
+    saveState();
+    render();
+    modalOverlay.classList.remove('show');
+  });
+
+  setInterval(tick, 1000);
+  render();
+</script>
+</body>
 </html>
