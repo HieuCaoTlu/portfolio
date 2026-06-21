@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trò chơi đoán chữ</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(180deg, #ffe9e6 0%, #fff7f0 100%);
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .game-card {
+      width: min(720px, 100%);
+      background: #ffffffcc;
+      border: 2px solid #f4a4b0;
+      border-radius: 28px;
+      box-shadow: 0 22px 40px rgba(0,0,0,0.08);
+      padding: 28px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 18px;
+      font-size: 2rem;
+      color: #be2f59;
+    }
+    .cats {
+      font-size: 2.4rem;
+      margin: 16px 0;
+      letter-spacing: 0.4rem;
+    }
+    .phrase {
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: repeat(11, 38px);
+      gap: 6px;
+      justify-items: center;
+      width: fit-content;
+    }
+    .cell {
+      width: 38px;
+      height: 52px;
+      background: #fff4f4;
+      border: 2px solid #f7ced5;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #b2304a;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .cell.hidden {
+      color: #f7bfc7;
+    }
+    .letters {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(8, 42px);
+      gap: 8px;
+      justify-items: center;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .letter-btn {
+      min-width: 42px;
+      min-height: 42px;
+      padding: 8px;
+      border: 2px solid #f4a4b0;
+      border-radius: 14px;
+      background: #fff;
+      color: #c23b5a;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.16s ease, background 0.16s ease;
+    }
+    .letter-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      background: #ffe6ec;
+    }
+    .letter-btn:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+    .status {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #5a2a3e;
+      min-height: 1.5rem;
+    }
+    .control {
+      margin-top: 22px;
+    }
+    .reset-btn {
+      border: none;
+      padding: 12px 24px;
+      background: #f07b98;
+      color: #fff;
+      font-size: 1rem;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .reset-btn:hover {
+      background: #d85b7d;
+    }
+    .hint {
+      margin-top: 12px;
+      color: #914a5b;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-card">
+    <h1>Đoán chữ</h1>
+    <div class="cats" id="catCount">😺😺😺😺😺</div>
+    <div class="phrase" id="phrase"></div>
+    <div class="letters" id="letters"></div>
+    <div class="status" id="status"></div>
+    <div class="control">
+      <button class="reset-btn" id="reset">Chơi lại</button>
+    </div>
+    <div class="hint">Click vào ô chữ bên dưới để đoán từng ký tự. Sai một lần sẽ mất 1 con mèo.</div>
+  </div>
+  <audio id="bgm" src="bgm.mp3" preload="auto"></audio>
+  <script src="script.js"></script>
+</body>
+</html>
