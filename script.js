@@ -16,6 +16,10 @@ function dodgeJihyo() {
 }
 
 jihyoBtn.addEventListener("mouseenter", dodgeJihyo);
+jihyoBtn.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  dodgeJihyo();
+});
 
 lilyBtn.addEventListener("click", () => {
   modalOverlay.classList.add("show");

@@ -42,7 +42,8 @@ h1 {
 .choices {
   position: relative;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   gap: 24px;
   min-height: 120px;
 }
