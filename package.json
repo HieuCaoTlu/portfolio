@@ -2,7 +2,23 @@
   "name": "portfolio",
   "version": "1.0.0",
   "private": true,
+  "description": "",
+  "homepage": "https://github.com/HieuCaoTlu/portfolio#readme",
+  "bugs": {
+    "url": "https://github.com/HieuCaoTlu/portfolio/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HieuCaoTlu/portfolio.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "main.js",
   "scripts": {
     "build": "echo \"No build step required\""
+  },
+  "dependencies": {
+    "docx": "^9.7.1"
   }
 }
